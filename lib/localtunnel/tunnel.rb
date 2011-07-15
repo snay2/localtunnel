@@ -43,6 +43,7 @@ class LocalTunnel::Tunnel
     tunnel = @tunnel
     gateway = Net::SSH::Gateway.new(@host, tunnel['user'])
     gateway.open_remote(port.to_i, '127.0.0.1', tunnel['through_port'].to_i) do |rp,rh|
+      # Add some code to ping a URL notifying of the tunnel location
       puts "   " << tunnel['banner'] if tunnel.has_key? 'banner'
       puts "   Port #{port} is now publicly accessible from http://#{tunnel['host']} ..."
       begin
