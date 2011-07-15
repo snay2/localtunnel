@@ -13,7 +13,7 @@ class LocalTunnel::Tunnel
 
   attr_accessor :port, :key, :host
 
-  def initialize(port, key, webhook)
+  def initialize(port, key, webhook="")
     @port = port
     @key  = key
     @host = ""
@@ -64,8 +64,10 @@ class LocalTunnel::Tunnel
 
   # Ping a webhook with the domain name at which this localtunnel can be accessed
   def ping_webhook(url)
-    url = URI.parse("#{@webhook}?tunnel=#{url}")
-    Net::HTTP.get(url)
-    puts "    Pinged the webhook."
+    if not @webhook.empty? then
+      url = URI.parse("#{@webhook}?tunnel=#{url}")
+      Net::HTTP.get(url)
+      puts "   Pinged the webhook."
+    end
   end
 end
