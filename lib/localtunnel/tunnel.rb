@@ -13,10 +13,11 @@ class LocalTunnel::Tunnel
 
   attr_accessor :port, :key, :host
 
-  def initialize(port, key)
+  def initialize(port, key, webhook)
     @port = port
     @key  = key
     @host = ""
+    @webhook = webhook
   end
 
   def register_tunnel(key=@key)
@@ -43,9 +44,9 @@ class LocalTunnel::Tunnel
     tunnel = @tunnel
     gateway = Net::SSH::Gateway.new(@host, tunnel['user'])
     gateway.open_remote(port.to_i, '127.0.0.1', tunnel['through_port'].to_i) do |rp,rh|
-      # Add some code to ping a URL notifying of the tunnel location
       puts "   " << tunnel['banner'] if tunnel.has_key? 'banner'
       puts "   Port #{port} is now publicly accessible from http://#{tunnel['host']} ..."
+      ping_webhook(tunnel['host'])
       begin
         sleep 1 while true
       rescue Interrupt
@@ -59,5 +60,12 @@ class LocalTunnel::Tunnel
     puts "   upload a public key using the -k option. Try this:\n\n"
     puts "   localtunnel -k #{possible_key ? possible_key : '~/path/to/key'} #{port}"
     exit
+  end
+
+  # Ping a webhook with the domain name at which this localtunnel can be accessed
+  def ping_webhook(url)
+    url = URI.parse("#{@webhook}?tunnel=#{url}")
+    Net::HTTP.get(url)
+    puts "    Pinged the webhook."
   end
 end
